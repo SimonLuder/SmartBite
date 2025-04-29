@@ -1,5 +1,7 @@
-from dataset import FoodDataset
+
+from dataset import FoodDataset  # deine eigene Dataset Klasse
 from model import FoodClassifier
+
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
@@ -8,35 +10,31 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 import torch
 
-# Dummy Beispiel (ersetzen durch echte Daten)
-labels_path = f"/path/to/images"
-image_path = f"/path/to/labels"
 
-# Transforms
+image_path = "/path/to/images"
+labels_path = "/path/to/labels"
+
+# Transforms (hier deine gewünschten Operationen einfügen)
 transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225]),
 ])
 
+# Datasets
+train_dataset = FoodDataset(image_path=image_path, labels_path=labels_path, transform=transform)
+val_dataset = FoodDataset(image_path=image_path, labels_path=labels_path, transform=transform)
 
-from torch.utils.data import Dataset
-from PIL import Image
-import torch
-
-
-
-
-
-# Dataset & Dataloader
-train_dataset = DATASET(image_paths, labels, transform=transform) # TODO put here dataset
+# Dataloaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-
-val_dataset = FoodDataset(image_paths, labels, transform=transform) # TODO put here dataset
 val_loader = DataLoader(val_dataset, batch_size=32)
 
 # Modell
 model = FoodClassifier(num_classes=101)
 
 # W&B Logger
-wandb_logger = WandbLogger(project="food-classification", log_model="all")
+wandb_logger = WandbLogger(project="smartbite", log_model="all")
 
 # Callbacks
 checkpoint_cb = ModelCheckpoint(
