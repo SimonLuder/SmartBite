@@ -1,3 +1,4 @@
 # data version control
 dvc==3.59.1
 dvc-s3==3.2.0
+urllib3==1.26.13
