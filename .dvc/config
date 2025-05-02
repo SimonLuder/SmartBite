@@ -1,0 +1,5 @@
+[core]
+    remote = smartbite_digitalocean
+['remote "smartbite_digitalocean"']
+    url = s3://smartbite/data/raw
+    endpointurl = https://fra1.digitaloceanspaces.com
