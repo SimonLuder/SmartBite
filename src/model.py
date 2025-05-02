@@ -8,16 +8,17 @@ class FoodClassifier(pl.LightningModule):
     def __init__(self, num_classes, lr=1e-4):
         super().__init__()
         self.save_hyperparameters()
+        self.lr = lr
 
         self.model = models.resnet50(pretrained=True)
         # Freeze all layers except the last one
-        for param in self.model.parameters():
-            param.requires_grad = False
-        for param in self.model.fc.parameters():
-            param.requires_grad = True
-        # Unfreeze the last block
-        for param in self.model.layer4.parameters():
-            param.requires_grad = True
+        # for param in self.model.parameters():
+        #     param.requires_grad = False
+        # for param in self.model.fc.parameters():
+        #     param.requires_grad = True
+        # # Unfreeze the last block
+        # for param in self.model.layer4.parameters():
+        #     param.requires_grad = True
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
 
         self.criterion = nn.CrossEntropyLoss()
@@ -44,4 +45,4 @@ class FoodClassifier(pl.LightningModule):
         self.log("val_acc", acc, prog_bar=True)
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+        return torch.optim.Adam(self.parameters(), lr=self.lr)

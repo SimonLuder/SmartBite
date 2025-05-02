@@ -1,5 +1,4 @@
 
-import torch
 from model import FoodClassifier
 
 import pytorch_lightning as pl
@@ -7,9 +6,6 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-
-import sys
-import os
 
 # append src to path
 from dataset import ImageLabelDataset
