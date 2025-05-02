@@ -28,22 +28,32 @@ smartbite/
 └── .gitignore
 ```
 
+
 ## Repository Setup
 
-To set up the repository, follow the subsequent steps:
+To set up the repository and prepare the data pipeline, follow these steps:
 
-1. Clone the GitHub repository
+1. **Clone the GitHub repository**
     ```sh
     git clone https://github.com/SimonLuder/SmartBite.git
+    cd SmartBite
     ```
 
-2. Install the dependencies from the requirements.txt
+2. **Install the Python dependencies**
+    Make sure your virtual environment is activated, then run:
     ```sh
     pip install -r requirements.txt
     ```
 
-3. Download the dataset
-First, add `.dvc/config.local` (obtained separately) which contains the access keys for the DigitalOcean space object storage. Next, pull the current dataset.
-    ```sh
-    dvc pull
-    ```
+3. **Download and preprocess the dataset**
+    - First, add a valid `.dvc/config.local` file (shared separately), which contains the access keys for the DigitalOcean Spaces object storage.
+    - Then, pull the dataset with DVC:
+      ```sh
+      dvc pull
+      ```
+    - Finally, preprocess the data:
+      ```sh
+      python src/preprocess.py
+      ```
+
+---
