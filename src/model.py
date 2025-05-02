@@ -10,6 +10,9 @@ class FoodClassifier(pl.LightningModule):
         self.save_hyperparameters()
 
         self.model = models.resnet50(pretrained=True)
+        # Freeze all layers except the last one
+        for param in self.model.parameters():
+            param.requires_grad = False
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
 
         self.criterion = nn.CrossEntropyLoss()
