@@ -1,18 +1,18 @@
 
-from dataset import FoodDataset  # deine eigene Dataset Klasse
+import torch
 from model import FoodClassifier
-
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-import torch
 
+import sys
+import os
 
-image_path = "/path/to/images"
-labels_path = "/path/to/labels"
+# append src to path
+from dataset import ImageLabelDataset
 
 # Transforms (hier deine gewünschten Operationen einfügen)
 transform = transforms.Compose([
@@ -24,8 +24,16 @@ transform = transforms.Compose([
 
 
 # Datasets
-train_dataset = FoodDataset(image_path=image_path, labels_path=labels_path, transform=transform)
-val_dataset = FoodDataset(image_path=image_path, labels_path=labels_path, transform=transform)
+train_dataset = ImageLabelDataset(
+    json_path=r'data/processed/food-101/train.json',
+    root_dir=r'data/raw/food-101/images',
+    transform=transform,
+    )
+val_dataset = ImageLabelDataset(
+    json_path=r'data/processed/food-101/test.json',
+    root_dir=r'data/raw/food-101/images',
+    transform=transform,
+    )
 
 # Dataloaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
