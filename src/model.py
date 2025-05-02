@@ -13,6 +13,11 @@ class FoodClassifier(pl.LightningModule):
         # Freeze all layers except the last one
         for param in self.model.parameters():
             param.requires_grad = False
+        for param in self.model.fc.parameters():
+            param.requires_grad = True
+        # Unfreeze the last block
+        for param in self.model.layer4.parameters():
+            param.requires_grad = True
         self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
 
         self.criterion = nn.CrossEntropyLoss()
