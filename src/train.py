@@ -22,6 +22,7 @@ transform = transforms.Compose([
                          std=[0.229, 0.224, 0.225]),
 ])
 
+
 # Datasets
 train_dataset = FoodDataset(image_path=image_path, labels_path=labels_path, transform=transform)
 val_dataset = FoodDataset(image_path=image_path, labels_path=labels_path, transform=transform)
