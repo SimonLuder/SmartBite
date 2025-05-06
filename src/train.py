@@ -36,7 +36,7 @@ train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32)
 
 # Modell
-model = FoodClassifier(num_classes=101)
+model = FoodClassifier(num_classes=101, lr=1e-4)
 
 # W&B Logger
 wandb_logger = WandbLogger(project="smartbite", log_model="all")

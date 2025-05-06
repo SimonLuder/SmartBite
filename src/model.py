@@ -24,6 +24,9 @@ class FoodClassifier(pl.LightningModule):
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
 
+        self.precision = torchmetrics.classification.MulticlassPrecision(num_classes=num_classes, average='macro')
+        self.recall = torchmetrics.classification.MulticlassRecall(num_classes=num_classes, average='macro')
+
     def forward(self, x):
         return self.model(x)
 
@@ -32,6 +35,10 @@ class FoodClassifier(pl.LightningModule):
         logits = self(x)
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits.softmax(dim=-1), y)
+        precision = self.precision(logits.softmax(dim=-1), y)
+        recall = self.recall(logits.softmax(dim=-1), y)
+        self.log("train_precision", precision)
+        self.log("train_recall", recall)
         self.log("train_loss", loss)
         self.log("train_acc", acc)
         return loss
@@ -41,6 +48,10 @@ class FoodClassifier(pl.LightningModule):
         logits = self(x)
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits.softmax(dim=-1), y)
+        precision = self.precision(logits.softmax(dim=-1), y)
+        recall = self.recall(logits.softmax(dim=-1), y)
+        self.log("val_precision", precision, prog_bar=True)
+        self.log("val_recall", recall, prog_bar=True)
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
 
