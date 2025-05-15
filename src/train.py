@@ -39,7 +39,7 @@ val_loader = DataLoader(val_dataset, batch_size=32)
 model = FoodClassifier(num_classes=101, lr=1e-4)
 
 # W&B Logger
-wandb_logger = WandbLogger(project="smartbite", log_model="all")
+wandb_logger = WandbLogger(project="smartbite", log_model="all", entity="smartbite")
 
 # Callbacks
 checkpoint_cb = ModelCheckpoint(
