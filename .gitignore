@@ -172,3 +172,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+.dvc
+/data
+
+/wandb
+/temp
+/lightning_logs
+
+# W&B API key (do not commit!)
+wandb_secret.json
