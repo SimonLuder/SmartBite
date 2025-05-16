@@ -18,7 +18,8 @@ def train_model(config=None):
         config = load_config()
 
     # W&B setup
-    load_wandb_api_key()
+    with open("wandb_secret.json", "r") as f:
+        wandb_secret = json.load(f)
     wandb.login(key=wandb_secret["API_KEY"])
     wandb_run = wandb.init(project=config["project_name"], entity=config["entity"], name=config["run_name"], config=config)
     wandb_logger = WandbLogger(experiment=wandb_run, log_model=config["wandb"]["log_model"])
