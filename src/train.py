@@ -6,7 +6,7 @@ from pytorch_lightning.loggers import WandbLogger
 import wandb
 from model import FoodClassifier
 from dataset import ImageLabelDataset
-from utils import load_config, save_config
+from utils import load_config, save_config, load_wandb_api_key
 import json
 import os
 
@@ -18,8 +18,7 @@ def train_model(config=None):
         config = load_config()
 
     # W&B setup
-    with open("wandb_secret.json", "r") as f:
-        wandb_secret = json.load(f)
+    load_wandb_api_key()
     wandb.login(key=wandb_secret["API_KEY"])
     wandb_run = wandb.init(project=config["project_name"], entity=config["entity"], name=config["run_name"], config=config)
     wandb_logger = WandbLogger(experiment=wandb_run, log_model=config["wandb"]["log_model"])

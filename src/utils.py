@@ -3,11 +3,13 @@ import os
 import wandb
 import shutil
 
+
 def load_config(path="config.yaml"):
     """To load the yaml yonfig file"""
     with open(path, "r") as f:
         return yaml.safe_load(f)
     
+
 def save_config(path, config):
     with open(path, "w") as f:
             yaml.safe_dump(config, f)
@@ -82,3 +84,9 @@ def download_best_model_artifact(entity: str, project: str, run_id: str, output_
     ckpt_path = os.path.join(run_subfolder, ckpt_files[0])
     print(f"Checkpoint downloaded to: {ckpt_path}")
     return ckpt_path
+
+
+def load_wandb_api_key(secret_file="wandb_key.txt"):
+    with open(secret_file, "r") as f:
+        api_key = f.read().strip()
+    os.environ["WANDB_API_KEY"] = api_key
