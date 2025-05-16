@@ -1,31 +1,32 @@
+import wandb
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torchvision.models as models
 import pytorch_lightning as pl
-import torchmetrics
+from torchmetrics.classification import Accuracy, Precision, Recall, MulticlassAccuracy
+
 
 class FoodClassifier(pl.LightningModule):
     def __init__(self, num_classes, lr=1e-4):
         super().__init__()
         self.save_hyperparameters()
+
+        self.model = models.resnet50(pretrained=True) # Backbone
+        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes) # Classifier layer
+
         self.lr = lr
-
-        self.model = models.resnet50(pretrained=True)
-        # Freeze all layers except the last one
-        # for param in self.model.parameters():
-        #     param.requires_grad = False
-        # for param in self.model.fc.parameters():
-        #     param.requires_grad = True
-        # # Unfreeze the last block
-        # for param in self.model.layer4.parameters():
-        #     param.requires_grad = True
-        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
-
         self.criterion = nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
+        
+        # Used separate instances for train/val to avoid state leakage
+        self.train_acc = Accuracy(task="multiclass", num_classes=num_classes)
+        self.train_precision = Precision(task="multiclass", num_classes=num_classes, average='macro')
+        self.train_recall = Recall(task="multiclass", num_classes=num_classes, average='macro')
 
-        self.precision = torchmetrics.classification.MulticlassPrecision(num_classes=num_classes, average='macro')
-        self.recall = torchmetrics.classification.MulticlassRecall(num_classes=num_classes, average='macro')
+        self.val_acc = Accuracy(task="multiclass", num_classes=num_classes)
+        self.val_precision = Precision(task="multiclass", num_classes=num_classes, average='macro')
+        self.val_recall = Recall(task="multiclass", num_classes=num_classes, average='macro')
+
 
     def forward(self, x):
         return self.model(x)
@@ -34,9 +35,9 @@ class FoodClassifier(pl.LightningModule):
         x, y = batch
         logits = self(x)
         loss = self.criterion(logits, y)
-        acc = self.accuracy(logits.softmax(dim=-1), y)
-        precision = self.precision(logits.softmax(dim=-1), y)
-        recall = self.recall(logits.softmax(dim=-1), y)
+        acc = self.train_acc(logits.softmax(dim=-1), y)
+        precision = self.train_precision(logits.softmax(dim=-1), y)
+        recall = self.train_recall(logits.softmax(dim=-1), y)
         self.log("train_precision", precision)
         self.log("train_recall", recall)
         self.log("train_loss", loss)
@@ -47,13 +48,55 @@ class FoodClassifier(pl.LightningModule):
         x, y = batch
         logits = self(x)
         loss = self.criterion(logits, y)
-        acc = self.accuracy(logits.softmax(dim=-1), y)
-        precision = self.precision(logits.softmax(dim=-1), y)
-        recall = self.recall(logits.softmax(dim=-1), y)
+        acc = self.val_acc(logits.softmax(dim=-1), y)
+        precision = self.val_precision(logits.softmax(dim=-1), y)
+        recall = self.val_recall(logits.softmax(dim=-1), y)
         self.log("val_precision", precision, prog_bar=True)
         self.log("val_recall", recall, prog_bar=True)
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_acc", acc, prog_bar=True)
+        
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr)
+    
+
+    def on_test_start(self):
+        self.test_preds = []
+        self.test_targets = []
+
+        # Per-class accuracy
+        self.per_class_accuracy = MulticlassAccuracy(
+            num_classes=self.hparams.num_classes, average=None).to(self.device)
+
+
+    def test_step(self, batch, batch_idx):
+        x, y = batch
+        logits = self(x)
+        loss = self.criterion(logits, y)
+
+        probs = torch.nn.functional.softmax(logits, dim=1)
+        preds = probs.argmax(dim=1)
+
+        # Save for confusion matrix
+        self.test_preds.append(preds.cpu())
+        self.test_targets.append(y.cpu())
+
+        # Log metrics
+        acc = self.val_acc(probs, y)
+        precision = self.val_precision(probs, y)
+        recall = self.val_recall(probs, y)
+
+        self.log("test_loss", loss)
+        self.log("test_acc", acc)
+        self.log("test_precision", precision)
+        self.log("test_recall", recall)
+        
+
+    def on_test_end(self):
+        # Stack and save predictions and targets for confusion matrix
+        preds = torch.cat(self.test_preds)
+        targets = torch.cat(self.test_targets)
+
+        torch.save({"preds": preds, "targets": targets}, "temp/test_outputs.pt")
+    
