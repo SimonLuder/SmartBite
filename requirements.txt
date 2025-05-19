@@ -3,3 +3,7 @@ dvc==3.59.1
 dvc-s3==3.2.0
 urllib3==1.26.13
 scikit-learn==1.3.1
+
+# frontend
+streamlit>=1.34.0
+requests>=2.31.0
