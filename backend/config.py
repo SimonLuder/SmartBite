@@ -5,8 +5,12 @@ load_dotenv()
 
 
 class Config:
-  # to do: add more config variables
-  SOME_KEY = os.getenv('SOME_KEY')
+  CLIENT_ID = os.getenv('CLIENT_ID')
+  CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+  NUTRITION_API_URL = os.getenv('NUTRITION_API_URL')
+  CHECKPOINT_PATH = os.getenv('CHECKPOINT_PATH', './src/static_files/model.ckpt')
+  WEIGHTS_PATH = os.getenv('WEIGHTS_PATH', './src/static_files/food_classifier_weights.pth')
+  LABEL_PATH = os.getenv('LABEL_PATH', './src/static_files/labels.json')
 
 
 class ProdConfig(Config):

@@ -1,12 +1,53 @@
-async def get_nutrition_scores(classification_result):
+import httpx
+from typing import Dict
+from oauthlib.oauth1 import Client
+from urllib.parse import urlencode
+
+import config
+
+
+CONFIG = config.get_config()
+
+# initialize the OAuth1 client
+# signature_type = 'QUERY' ensures that the signature is
+# included in the url query parameters
+signer = Client(client_key=CONFIG.CLIENT_ID, client_secret=CONFIG.CLIENT_SECRET, signature_type='QUERY')
+
+
+async def get_nutrition_scores(classification_result) -> Dict:
   """Get nutrition scores based on the classification result.
 
   Args:
       classification_result (_type_): the classification result from the food classification service.
 
   Returns:
-      _type_: the nutrition scores for the classified food item.
+      Dict: the nutrition scores for the classified food item.
   """
-  
-  # here we would call the nutrition API to fetch relevant nutrition data
-  return {'calories': 52, 'carbs': 14, 'protein': 0.3, 'fat': 0.2}
+
+  # the request parameters for the nutrition API
+  # search_expression is the food item to be classified
+  # format is the response format we want from the API
+  params = {'search_expression': classification_result, 'format': 'json'}
+  url_with_params = CONFIG.NUTRITION_API_URL + '?' + urlencode(params)
+
+  # sign the url with the OAuth1 client
+  signed_url, _, _ = signer.sign(url_with_params, http_method='GET')
+
+  # make the request
+  async with httpx.AsyncClient() as client:
+    res = await client.get(signed_url)
+
+  if res.status_code != 200:
+    raise Exception(f'API call failed: {res.status_code} - {res.text}')
+
+  data = res.json()
+
+  # fatsecret api does only return 200 status code
+  # therefore check if the response data contains an error
+  if data.get('error'):
+    raise Exception(f'API call failed: {data.get("error")}')
+
+  # get the first food item from the response
+  stats = data.get('foods').get('food')[0]
+
+  return stats

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile
 
 from src.controllers import main_ctrl
 
@@ -19,5 +19,6 @@ async def status():
 
 # classification routes
 @router.post('/api/classify')
-async def classify():
-  return await main_ctrl.classify()
+async def classify(image: UploadFile = File(...)):
+  image_bytes = await image.read()
+  return await main_ctrl.classify(image_bytes)

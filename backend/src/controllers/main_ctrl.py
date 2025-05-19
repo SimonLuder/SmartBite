@@ -1,10 +1,12 @@
 import logging
+from typing import Dict
 from fastapi import HTTPException
 
-from src.services import classification_srv, nutrition_srv
+from src.services.classification_srv import ClassificationModel
+from src.services import nutrition_srv
 
 
-async def classify(some_data):
+async def classify(image_bytes: bytes) -> Dict:
   """Classify food items and fetch nutrition scores.
 
   Args:
@@ -16,7 +18,10 @@ async def classify(some_data):
 
   try:
     # get classifications
-    result = await classification_srv.classify_food(some_data)
+    model = ClassificationModel.get_instance()
+
+    result = model.inference(image_bytes)
+
     # fetch nutrition scores based on the classification result
     scores = await nutrition_srv.get_nutrition_scores(result)
     return {'result': result, 'scores': scores}
