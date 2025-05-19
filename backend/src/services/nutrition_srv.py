@@ -1,3 +1,4 @@
+import re
 import httpx
 from typing import Dict
 from oauthlib.oauth1 import Client
@@ -50,4 +51,24 @@ async def get_nutrition_scores(classification_result) -> Dict:
   # get the first food item from the response
   stats = data.get('foods').get('food')[0]
 
-  return stats
+  # the pattern (regex) to extract the nutrition values
+  pattern = r'Calories:\s*([\d.]+kcal)\s*\|\s*Fat:\s*([\d.]+g)\s*\|\s*Carbs:\s*([\d.]+g)\s*\|\s*Protein:\s*([\d.]+g)'
+  match = re.search(pattern, stats.get('food_description'))
+
+  if match:
+    calories = match.group(1)
+    fat = match.group(2)
+    carbs = match.group(3)
+    protein = match.group(4)
+  else:
+    # if the regex fails, set all values to NaN
+    calories, fat, carbs, protein = 'NaN'
+
+  return {
+    'serving_size': 'Per 100g',
+    'calories': calories,
+    'protein': protein,
+    'carbohydrates': carbs,
+    'fat': fat,
+    'food_url': stats.get('food_url'),
+  }

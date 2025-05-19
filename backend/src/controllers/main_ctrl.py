@@ -20,11 +20,12 @@ async def classify(image_bytes: bytes) -> Dict:
     # get classifications
     model = ClassificationModel.get_instance()
 
-    result = model.inference(image_bytes)
+    label, probability = model.inference(image_bytes)
 
     # fetch nutrition scores based on the classification result
-    scores = await nutrition_srv.get_nutrition_scores(result)
-    return {'result': result, 'scores': scores}
+    scores = await nutrition_srv.get_nutrition_scores(label)
+    
+    return {'label': label, 'probability': round(probability, 3), 'nutrition': scores}
 
   except Exception as e:
     logging.exception(f'Error classifying food: {e}')

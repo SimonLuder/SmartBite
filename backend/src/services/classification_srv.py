@@ -95,8 +95,12 @@ class ClassificationModel:
     with torch.no_grad():
       output = self.model(input_tensor)  # shape: [1, num_classes]
       probs = torch.softmax(output, dim=1)
+      # get the predicted class index
       pred_class = torch.argmax(probs, dim=1).item()
-    return self.labels[pred_class]
+      # get prob for predicted class
+      pred_prob = probs[0][pred_class].item()
+
+    return self.labels[pred_class], pred_prob
 
   def inference(self, image_bytes: bytes) -> str:
     """Make an inference using the model.
