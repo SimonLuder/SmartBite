@@ -1,5 +1,7 @@
 import streamlit as st
 from pathlib import Path
+from api import check_status
+
 
 st.set_page_config(
     page_title="SmartBite",

@@ -4,6 +4,7 @@ from api import analyze_image
 st.set_page_config(page_title="Analyze Meal", page_icon="🔍")
 
 st.title("Analyze Your Meal")
+st.divider()
 
 # Initialize
 if "current_image" not in st.session_state:
@@ -43,28 +44,34 @@ if st.session_state["current_image"]:
         with st.spinner("Analyzing your meal..."):
             # get result from API
             result = analyze_image(st.session_state["current_image"])
-        st.success("Analysis complete!")
-
+        if result.get("label") == "Error":
+            st.error("Error analyzing image.")
+        else:
+            st.success("Analysis complete!")
+        st.divider()
         # Save the result to history
         st.session_state["history"].append({
             "image": st.session_state["current_image"],
-            "label": result.get("label"),
-            "confidence": result.get("confidence"),
+            "label": result.get("label").strip('", '),
+            "confidence": result.get("probability"),
             "nutrition": result.get("nutrition")
         })
 
         # Show result
         col1, col2 = st.columns(2)
-        col1.metric("Label", result.get("label", "Unknown"))
-        col2.metric("Confidence", f"{result.get('confidence', '?') * 100:.2f}%")
+        col1.metric("Label", result.get("label", "Unknown").strip('", '))
+        col2.metric("Confidence", f"{result.get('probability', '?') * 100:.2f}%")
 
-        st.divider()
         nutrition = result.get("nutrition", {})
+        st.markdown(f"### Nutrition Information {(nutrition.get('serving_size', '?').lower())}")
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Calories", f"{nutrition.get('calories', '?')} kcal")
-        col2.metric("Protein", f"{nutrition.get('protein', '?')} g")
-        col3.metric("Carbs", f"{nutrition.get('carbohydrates', '?')} g")
-        col4.metric("Fat", f"{nutrition.get('fat', '?')} g")
+        col1.metric("Calories", f"{nutrition.get('calories', '?')}")
+        col2.metric("Protein", f"{nutrition.get('protein', '?')}")
+        col3.metric("Carbs", f"{nutrition.get('carbohydrates', '?')}")
+        col4.metric("Fat", f"{nutrition.get('fat', '?')}")
+        st.link_button("View Full Nutrition Info", nutrition.get("food_url", "#"), disabled=(nutrition.get("food_url", "#") == '#'))
+        st.divider()
+
 
         # Clear the current image after analysis
         st.session_state["current_image"] = None

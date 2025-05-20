@@ -20,12 +20,13 @@ else:
         col2.metric("Confidence", f"{entry.get('confidence', 0) * 100:.2f}%")
 
         nutrition = entry.get("nutrition", {})
+        st.markdown(f"### Nutrition Information {(nutrition.get('serving_size', '?').lower())}")
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Calories", f"{nutrition.get('calories', '?')} kcal")
-        col2.metric("Protein", f"{nutrition.get('protein', '?')} g")
-        col3.metric("Carbs", f"{nutrition.get('carbohydrates', '?')} g")
-        col4.metric("Fat", f"{nutrition.get('fat', '?')} g")
-
+        col1.metric("Calories", f"{nutrition.get('calories', '?')}")
+        col2.metric("Protein", f"{nutrition.get('protein', '?')}")
+        col3.metric("Carbs", f"{nutrition.get('carbohydrates', '?')}")
+        col4.metric("Fat", f"{nutrition.get('fat', '?')}")
+        st.link_button("View Full Nutrition Info", nutrition.get("food_url", "#"), disabled=(nutrition.get("food_url", "#") == '#'))
         st.divider()
 
 if st.button("🗑️ Clear History"):
