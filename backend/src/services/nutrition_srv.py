@@ -62,7 +62,7 @@ async def get_nutrition_scores(classification_result) -> Dict:
     protein = match.group(4)
   else:
     # if the regex fails, set all values to NaN
-    calories, fat, carbs, protein = 'NaN'
+    calories, fat, carbs, protein = ('NaN', 'NaN', 'NaN', 'NaN')
 
   return {
     'serving_size': 'Per 100g',
