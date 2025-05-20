@@ -3,7 +3,6 @@ import json
 from PIL import Image
 from torch.utils.data import Dataset
 
-
 class ImageLabelDataset(Dataset):
     def __init__(self, json_path, root_dir, transform=None):
         with open(json_path, 'r') as f:
