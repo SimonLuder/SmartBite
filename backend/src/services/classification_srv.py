@@ -1,4 +1,5 @@
 import torch
+import json
 from torchvision import transforms
 from io import BytesIO
 from PIL import Image
@@ -32,6 +33,8 @@ class ClassificationModel:
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
       ]
     )
+
+    # here we can choose to load the model from wandb or from local weights
     self.model = self._load_model_default()
 
   def _load_model_default(self) -> FoodClassifier:
@@ -63,16 +66,15 @@ class ClassificationModel:
         list[str]: list of labels.
     """
     with open(self.label_path, 'r') as f:
-      # remove any leading/trailing whitespace and double quotes
-      labels = [line.strip().replace('"', '').replace(',', '') for line in f.readlines()]
+      # load the labels from the json file
+      labels = json.load(f)
     return labels
 
   def _process_image_bytes(self, image_bytes: bytes) -> Image.Image:
-    """Decode a base64 string to an image.
-    1. Base64 string → bytes → PIL Image
+    """Decode a bytes image to a PIL Image.
 
     Args:
-        base64_str (str): base64 string of the image.
+        image_bytes (bytes): bytes of the image.
 
     Returns:
         Image.Image: decoded image.
@@ -81,10 +83,10 @@ class ClassificationModel:
     return image
 
   def _preprocess_image_for_resnet(self, image_bytes: bytes) -> torch.Tensor:
-    """Preprocess the base64 image for ResNet model.
+    """Preprocess the bytes image for ResNet model.
 
     Args:
-        base64_str (_type_): bytes of the image.
+        image_bytes (bytes): bytes of the image.
 
     Returns:
         torch.Tensor: preprocessed image tensor.
@@ -94,14 +96,14 @@ class ClassificationModel:
     tensor = tensor.unsqueeze(0)
     return tensor
 
-  def _predict(self, input_tensor: torch.Tensor) -> str:
+  def _predict(self, input_tensor: torch.Tensor) -> tuple[str, float]:
     """Make a prediction using the model.
 
     Args:
         input_tensor (torch.Tensor): input tensor for the model.
 
     Returns:
-        str: predicted class label.
+        tuple[str, float]: predicted class label and probability.
     """
     with torch.no_grad():
       output = self.model(input_tensor)  # shape: [1, num_classes]
@@ -113,17 +115,19 @@ class ClassificationModel:
 
     return self.labels[pred_class], pred_prob
 
-  def inference(self, image_bytes: bytes) -> str:
+  def inference(self, image_bytes: bytes) -> tuple[str, float]:
     """Make an inference using the model.
 
     Args:
-        image (bytes): bytes of the image.
+        image_bytes (bytes): bytes of the image.
 
     Returns:
-        str: predicted class label.
+        tuple[str, float]: predicted class label and probability.
     """
     # preprocess the image
     input_tensor = self._preprocess_image_for_resnet(image_bytes)
+    
     # make prediction
-    pred_class = self._predict(input_tensor)
-    return pred_class
+    pred_class, probability = self._predict(input_tensor)
+    
+    return pred_class, probability

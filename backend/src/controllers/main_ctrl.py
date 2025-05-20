@@ -10,21 +10,22 @@ async def classify(image_bytes: bytes) -> Dict:
   """Classify food items and fetch nutrition scores.
 
   Args:
-      some_data (_type_): data to be classified.
+      image_bytes (bytes): bytes of the image.
 
   Returns:
-      _type_: the classification result and nutrition scores.
+      Dict: the classification result, probablity and nutrition scores.
   """
 
   try:
     # get classifications
     model = ClassificationModel.get_instance()
 
+    # get the classification result
     label, probability = model.inference(image_bytes)
 
-    # fetch nutrition scores based on the classification result
+    # get nutrition scores based on the classification result
     scores = await nutrition_srv.get_nutrition_scores(label)
-    
+
     return {'label': label, 'probability': round(probability, 3), 'nutrition': scores}
 
   except Exception as e:

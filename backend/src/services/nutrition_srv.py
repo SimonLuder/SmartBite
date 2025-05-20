@@ -15,11 +15,11 @@ CONFIG = config.get_config()
 signer = Client(client_key=CONFIG.CLIENT_ID, client_secret=CONFIG.CLIENT_SECRET, signature_type='QUERY')
 
 
-async def get_nutrition_scores(classification_result) -> Dict:
+async def get_nutrition_scores(classification_result: str) -> Dict:
   """Get nutrition scores based on the classification result.
 
   Args:
-      classification_result (_type_): the classification result from the food classification service.
+      classification_result (str): the classification result from the food classification service.
 
   Returns:
       Dict: the nutrition scores for the classified food item.
