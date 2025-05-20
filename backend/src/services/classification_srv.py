@@ -32,17 +32,27 @@ class ClassificationModel:
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
       ]
     )
-    self.model = self._load_model()
+    self.model = self._load_model_default()
 
-  def _load_model(self):
+  def _load_model_default(self) -> FoodClassifier:
     """Load the pre-trained ResNet model.
 
     Returns:
-        _type_: pre-trained ResNet model.
+        FoodClassifier: pre-trained ResNet model.
     """
     self.model = FoodClassifier(num_classes=self.num_classes)
     state_dict = torch.load(self.weights_path)
     self.model.load_state_dict(state_dict)
+    self.model.eval()
+    return self.model
+
+  def _load_model_wandb(self) -> FoodClassifier:
+    """Load the pre-trained ResNet model from wandb.
+
+    Returns:
+        FoodClassifier: pre-trained ResNet model.
+    """
+    self.model = FoodClassifier.load_from_checkpoint(self.ckpt_path)
     self.model.eval()
     return self.model
 
@@ -53,7 +63,8 @@ class ClassificationModel:
         list[str]: list of labels.
     """
     with open(self.label_path, 'r') as f:
-      labels = [line.strip() for line in f.readlines()]
+      # remove any leading/trailing whitespace and double quotes
+      labels = [line.strip().replace('"', '').replace(',', '') for line in f.readlines()]
     return labels
 
   def _process_image_bytes(self, image_bytes: bytes) -> Image.Image:

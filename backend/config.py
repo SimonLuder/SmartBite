@@ -15,10 +15,12 @@ class Config:
 
 class ProdConfig(Config):
   DEBUG = False
+  CORS_ORIGINS = ['https://some-prod-url.com']
 
 
 class DevConfig(Config):
   DEBUG = True
+  CORS_ORIGINS = ['*']
 
 
 def get_config():
