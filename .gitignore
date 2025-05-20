@@ -173,6 +173,13 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# formatters
+*.toml
+
+# models
+*.pth
+*.ckpt
+
 .dvc
 /data
 
