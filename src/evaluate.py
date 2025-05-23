@@ -1,4 +1,5 @@
 import os
+import shutil
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -19,11 +20,14 @@ from utils import load_config, download_best_model_artifact, get_run_id_from_nam
 def test_model(config=None):
 
     if config is None:
-        config = load_config()
+        config = load_config("temp/config.yaml")
 
     entity = config["entity"]
     project = config["project_name"]
     name = config["run_name"]
+
+    model_dir = f"models/{config['run_name']}"
+    os.makedirs(model_dir, exist_ok=True)
 
     run_id = get_run_id_from_name(entity, project, config["run_name"])
     wandb_run = wandb.init(project=project, entity=entity, id=run_id, resume="allow", name=name, config=config)
@@ -59,7 +63,7 @@ def test_model(config=None):
     trainer.test(model, dataloaders=test_loader)
 
     # Load predictions
-    outputs = torch.load("temp/test_outputs.pt")
+    outputs = torch.load(os.path.join(model_dir, "test_outputs.pt"))
     preds = outputs["preds"].numpy()
     targets = outputs["targets"].numpy()
 
@@ -101,6 +105,9 @@ def test_model(config=None):
 
     # Finish run
     wandb.finish()
+
+    if os.path.exists("temp/"):
+        shutil.rmtree("temp/")
 
 
 if __name__ == "__main__":

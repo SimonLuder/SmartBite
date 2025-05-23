@@ -85,8 +85,7 @@ def download_best_model_artifact(entity: str, project: str, run_id: str, output_
     print(f"Checkpoint downloaded to: {ckpt_path}")
     return ckpt_path
 
-
-def load_wandb_api_key(secret_file="wandb_key.txt"):
-    with open(secret_file, "r") as f:
-        api_key = f.read().strip()
-    os.environ["WANDB_API_KEY"] = api_key
+def wandb_run_exists(entity, project, run_name, api_key):
+    api = wandb.Api(api_key=api_key)
+    runs = api.runs(f"{entity}/{project}")
+    return any(run.name == run_name for run in runs)
