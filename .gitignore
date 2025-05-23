@@ -185,6 +185,7 @@ cython_debug/
 /data/processed
 
 /wandb
+/models
 /temp
 /lightning_logs
 

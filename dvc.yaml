@@ -1,0 +1,28 @@
+stages:
+
+  # download:
+  #   cmd: dvc pull
+
+  preprocess:
+    cmd: python src/preprocess.py
+    deps:
+      - src/preprocess.py
+      - data/raw/
+    outs:
+      - data/processed/
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/processed/
+      - wandb_secret.json
+      - config.yaml
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - data/processed/
+      - wandb_secret.json
+      - config.yaml
