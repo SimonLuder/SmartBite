@@ -14,7 +14,7 @@ import numpy as np
 
 from dataset import ImageLabelDataset
 from model import FoodClassifier  # Your LightningModule
-from utils import load_config, download_best_model_artifact, get_run_id_from_name
+from utils import load_config, download_best_model_artifact_from_run, get_run_id_from_name, log_best_model_as_artifact
 
 
 def test_model(config=None):
@@ -32,7 +32,7 @@ def test_model(config=None):
     run_id = get_run_id_from_name(entity, project, config["run_name"])
     wandb_run = wandb.init(project=project, entity=entity, id=run_id, resume="allow", name=name, config=config)
     wandb_logger = WandbLogger(experiment=wandb_run)
-    ckpt_path = download_best_model_artifact(entity, project, run_id, "temp/")
+    ckpt_path = download_best_model_artifact_from_run(entity, project, run_id, "temp/")
 
     # Load model
     model = FoodClassifier.load_from_checkpoint(ckpt_path, num_classes=config["model"]["num_classes"])
@@ -102,6 +102,19 @@ def test_model(config=None):
 
     # Upload test predictions as W&B artifact
     wandb.log({"per_class_accuracy": wandb.Image("temp/per_class_accuracy.png")})
+
+    # Overall test accuracy
+    overall_accuracy = np.mean(preds == targets)
+    wandb.log({"test/accuracy": overall_accuracy})
+
+    # Log model as artifact if it's the best
+    log_best_model_as_artifact(
+        entity=entity,
+        project=project,
+        model_path=ckpt_path,
+        test_accuracy=overall_accuracy,
+        artifact_name=f"best_classifier_model"
+    )
 
     # Finish run
     wandb.finish()

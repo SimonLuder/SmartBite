@@ -37,7 +37,7 @@ def get_run_id_from_name(entity: str, project: str, run_name: str) -> str:
     raise ValueError(f"No run found with name '{run_name}' in project '{project}'")
 
 
-def download_best_model_artifact(entity: str, project: str, run_id: str, output_dir: str = "temp"):
+def download_best_model_artifact_from_run(entity: str, project: str, run_id: str, output_dir: str = "temp"):
     """
     Downloads the best model artifact from a W&B run into a unique subfolder.
 
@@ -85,7 +85,47 @@ def download_best_model_artifact(entity: str, project: str, run_id: str, output_
     print(f"Checkpoint downloaded to: {ckpt_path}")
     return ckpt_path
 
+
 def wandb_run_exists(entity, project, run_name, api_key):
     api = wandb.Api(api_key=api_key)
     runs = api.runs(f"{entity}/{project}")
     return any(run.name == run_name for run in runs)
+
+
+def log_best_model_as_artifact(entity, project, model_path, test_accuracy, artifact_name):
+    api = wandb.Api()
+    all_runs = api.runs(f"{entity}/{project}")
+
+    best_accuracy = -1.0
+    for run in all_runs:
+        if "test/accuracy" in run.summary:
+            acc = run.summary["test/accuracy"]
+            best_accuracy = max(best_accuracy, acc)
+
+    if test_accuracy > best_accuracy:
+        artifact = wandb.Artifact(artifact_name, type="model")
+        artifact.add_file(model_path)
+        wandb.log_artifact(artifact)
+        print(f"✅ New best model logged as artifact with accuracy {test_accuracy:.4f}")
+    else:
+        print(f"ℹ️ Model not logged. Current accuracy ({test_accuracy:.4f}) <= best accuracy ({best_accuracy:.4f})")
+
+
+def download_best_model_artifact(entity, project, artifact_name, target_dir="models/"):
+    """
+    Downloads the latest version of a model artifact from Weights & Biases.
+
+    Args:
+        entity (str): W&B entity (username or team name)
+        project (str): W&B project name
+        artifact_name (str): Name of the artifact (e.g., "my_run_best_model")
+        target_dir (str): Local directory to save the downloaded artifact
+
+    Returns:
+        str: Path to the downloaded artifact directory
+    """
+    wandb.login()  # Ensure W&B is authenticated
+    artifact = wandb.use_artifact(f"{entity}/{project}/{artifact_name}:latest", type="model")
+    artifact_dir = artifact.download(root=target_dir)
+    print(f"✅ Downloaded model artifact to: {artifact_dir}")
+    return artifact_dir
