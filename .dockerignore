@@ -1,0 +1,14 @@
+# secrets
+**/.env
+
+# python cache
+**/__pycache__/
+
+# environments
+**/.venv/
+
+# git
+**/.git
+**/.github
+**/.gitignore
+**/.gitkeep
