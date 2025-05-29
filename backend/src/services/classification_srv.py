@@ -21,8 +21,7 @@ class ClassificationModel:
   def __init__(self):
     """Initialize the classification model."""
     self.config = config.get_config()
-    self.ckpt_path = self.config.CHECKPOINT_PATH
-    self.weights_path = self.config.WEIGHTS_PATH
+    self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     self.label_path = self.config.LABEL_PATH
     self.num_classes = 101
     self.labels = self._load_labels()
@@ -35,10 +34,15 @@ class ClassificationModel:
     )
 
     # here we can choose to load the model from wandb or from local weights
-    self.model = self._load_model_default()
+    if self.config.WEIGHTS_LOADING_APPROACH == 'wandb':
+      self.ckpt_path = self.config.CHECKPOINT_PATH
+      self.model = self._load_model_wandb()
+    else:
+      self.weights_path = self.config.WEIGHTS_PATH
+      self.model = self._load_model_default()
 
   def _load_model_default(self) -> FoodClassifier:
-    """Load the pre-trained ResNet model.
+    """Load the finetuned ResNet model from a .pth file.
 
     Returns:
         FoodClassifier: pre-trained ResNet model.
@@ -47,16 +51,21 @@ class ClassificationModel:
     state_dict = torch.load(self.weights_path)
     self.model.load_state_dict(state_dict)
     self.model.eval()
+    self.model.to(self.device)
     return self.model
 
   def _load_model_wandb(self) -> FoodClassifier:
-    """Load the pre-trained ResNet model from wandb.
+    """Load the finetuned ResNet model from a .ckpt file.
+    This file is loaded from wandb.
 
     Returns:
         FoodClassifier: pre-trained ResNet model.
     """
-    self.model = FoodClassifier.load_from_checkpoint(self.ckpt_path)
+    self.model = FoodClassifier(num_classes=self.num_classes)
+    state_dict = torch.load(self.ckpt_path, map_location=self.device)
+    self.model.load_state_dict(state_dict.get('state_dict'))
     self.model.eval()
+    self.model.to(self.device)
     return self.model
 
   def _load_labels(self) -> list[str]:
@@ -125,7 +134,7 @@ class ClassificationModel:
         tuple[str, float]: predicted class label and probability.
     """
     # preprocess the image
-    input_tensor = self._preprocess_image_for_resnet(image_bytes)
+    input_tensor = self._preprocess_image_for_resnet(image_bytes).to(self.device)
 
     # make prediction
     pred_class, probability = self._predict(input_tensor)
