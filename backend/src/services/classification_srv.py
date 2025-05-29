@@ -126,8 +126,8 @@ class ClassificationModel:
     """
     # preprocess the image
     input_tensor = self._preprocess_image_for_resnet(image_bytes)
-    
+
     # make prediction
     pred_class, probability = self._predict(input_tensor)
-    
+
     return pred_class, probability
