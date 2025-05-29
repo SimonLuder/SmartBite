@@ -7,12 +7,14 @@ Project repository for the graded assignment from the MSE course "Machine Learni
 ```
 smartbite/
 │
+├── .dvc/
+│
 ├── backend/
 |   ├── src/
 │   │   ├── controllers/      # API controllers (e.g. for orchestration)
 |   │   ├── models/           # Pydantic models for request/response validation
 |   │   ├── routes/           # API Endpoints
-|   │   ├── services/         # Core logic (ML model, data processing)
+|   │   └── services/         # Core logic (ML model, data processing)
 │   └── app.py                # Entry point for the FastAPI backend
 |   └── config.py             # Configuration settings (e.g., API keys)
 │
@@ -27,15 +29,18 @@ smartbite/
 │   ├── train.py
 │   └── evaluate.py
 │
+├── tests/                     # Integration tests for backend
+│   ├── fixtures/              # Sample data for testing
+│   └── integration/           # Integration tests API endpoints
+│
 ├── dvc.yaml                   # DVC pipeline config
-├── Dockerfile                 # Container for API/Streamlit
+├── docker-compose.yml         # Docker Compose configuration for running the application
 ├── README.md
-├── requirements.txt           # All Python dependencies
-├── .dvc/
+└── requirements.txt           # All Python dependencies
 └── .gitignore
 ```
 
-## Repository Setup
+## Application Setup
 
 To set up the repository and prepare the data pipeline, follow these steps:
 
@@ -58,16 +63,44 @@ source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Backend Setup
+### Run the Application
 
-**Run the FastAPI backend**
+The application can be started in two ways:
 
-The backend runs on port 8000 by default.
+- use docker to run the backend and frontend
+- run the backend and frontend separately
+
+#### Option 1: Run with Docker
+
+Make sure you have Docker installed and running.
+
+```sh
+docker compose up --build
+```
+
+#### Option 2: Run Backend and Frontend Separately
+
+_Run the FastAPI backend_
+
+- The backend runs on port 8000 by default.
 
 ```sh
 cd backend
 uvicorn app:app --reload
 ```
+
+_Run the Streamlit frontend_
+
+- The frontend runs on port 8501 by default.
+
+```sh
+cd dashboard
+streamlit run Home.py
+```
+
+## ML-Pipline Overview
+
+The machine learning pipeline consists of the following steps:
 
 ### Data Version Control (DVC) Setup
 
@@ -86,5 +119,12 @@ uvicorn app:app --reload
    ```sh
    python src/preprocess.py
    ```
+
+### GitHub Actions
+
+The repository is set up with GitHub Actions which automatically run on every push to the `main` branch. The actions include:
+
+- **Tests**: Run integration tests to ensure the API endpoints are functioning correctly.
+- **Docker Images**: Build and push Docker images for the backend and frontend to the GitHub Container Registry.
 
 ---
