@@ -5,6 +5,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY dashboard/ .
+COPY frontend/ .
 
 CMD ["streamlit", "run", "Home.py", "--server.port=8501"]

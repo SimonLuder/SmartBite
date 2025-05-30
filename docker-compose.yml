@@ -15,7 +15,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: dashboard/frontend.dockerfile
+      dockerfile: frontend/frontend.dockerfile
     image: smartbite-frontend
     container_name: smartbite-frontend
     ports:
