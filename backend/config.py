@@ -5,9 +5,12 @@ load_dotenv()
 
 
 class Config:
+  # fatsecret
   CLIENT_ID = os.getenv('CLIENT_ID')
   CLIENT_SECRET = os.getenv('CLIENT_SECRET')
   NUTRITION_API_URL = os.getenv('NUTRITION_API_URL')
+  
+  # model config (weights, labels, loading approach)
   CHECKPOINT_PATH = os.getenv('CHECKPOINT_PATH', './src/static_files/model.ckpt')
   WEIGHTS_PATH = os.getenv('WEIGHTS_PATH', './src/static_files/food_classifier_weights.pth')
   LABEL_PATH = os.getenv('LABEL_PATH', './src/static_files/labels.json')
@@ -16,11 +19,13 @@ class Config:
 
 class ProdConfig(Config):
   DEBUG = False
+  # CORS settings
   CORS_ORIGINS = os.getenv('CORS_ORIGINS', '').split(',')
 
 
 class DevConfig(Config):
   DEBUG = True
+  # CORS settings
   CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
 
 

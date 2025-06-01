@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # preload resnet50 model weights
 # we need to to this to avoid downloading the model weights at runtime
-# which cause of of memory issues on render
+# which would slow down the application startup
 RUN python -c "import torchvision.models as models; models.resnet50(weights=models.ResNet50_Weights.DEFAULT)"
 
 COPY backend/ .

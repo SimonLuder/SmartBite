@@ -18,7 +18,7 @@ smartbite/
 │   └── app.py                # Entry point for the FastAPI backend
 |   └── config.py             # Configuration settings (e.g., API keys)
 │
-├── dashboard/
+├── frontend/
 │   └── app.py                 # Streamlit frontend
 │
 ├── data/                      # Raw & processed datasets
@@ -94,7 +94,7 @@ _Run the Streamlit frontend_
 - The frontend runs on port 8501 by default.
 
 ```sh
-cd dashboard
+cd frontend
 streamlit run Home.py
 ```
 
@@ -125,6 +125,13 @@ The machine learning pipeline consists of the following steps:
 The repository is set up with GitHub Actions which automatically run on every push to the `main` branch. The actions include:
 
 - **Tests**: Run integration tests to ensure the API endpoints are functioning correctly.
+- **Download Model Weights**: Download the latest model weights from Weights & Biases to ensure that the backend uses the most up-to-date model.
 - **Docker Images**: Build and push Docker images for the backend and frontend to the GitHub Container Registry.
+
+### Deployment
+
+The application is deployed on Render.com, which pulls the latest Docker images from the GitHub Container Registry and runs them.
+
+The application is accessible [here](https://smartbite-frontend.onrender.com).
 
 ---
