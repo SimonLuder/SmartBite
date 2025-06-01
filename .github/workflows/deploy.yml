@@ -3,7 +3,7 @@ name: Build and Push Docker Images
 on:
   workflow_dispatch:
   push:
-    branches: [main, fastapi-backend]
+    branches: [main]
 
 jobs:
   tests:
