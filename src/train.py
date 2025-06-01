@@ -6,9 +6,10 @@ from pytorch_lightning.loggers import WandbLogger
 import wandb
 from model import FoodClassifier
 from dataset import ImageLabelDataset
-from utils import load_config, save_config, load_wandb_api_key
+from utils import load_config, save_config, wandb_run_exists
 import json
 import os
+import shutil
 
 
 def train_model(config=None):
@@ -17,16 +18,25 @@ def train_model(config=None):
     if config is None:
         config = load_config()
 
+    
     # W&B setup
     with open("wandb_secret.json", "r") as f:
         wandb_secret = json.load(f)
+
+    if wandb_run_exists(config["entity"], config["project_name"], config["run_name"], wandb_secret["API_KEY"]):
+        raise ValueError(f"A W&B run with the name {config['run_name']} already exists. Choose a different run_name in config.yaml")
+
     wandb.login(key=wandb_secret["API_KEY"])
     wandb_run = wandb.init(project=config["project_name"], entity=config["entity"], name=config["run_name"], config=config)
     wandb_logger = WandbLogger(experiment=wandb_run, log_model=config["wandb"]["log_model"])
 
+    output_dir = f"models/{config['run_name']}"
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs("temp", exist_ok=True)
+
     # Transforms
-    transform = transforms.Compose(
-        [transforms.Resize((224, 224)),
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406], 
@@ -54,7 +64,8 @@ def train_model(config=None):
     # Model
     model = FoodClassifier(
         num_classes=config["model"]["num_classes"],
-        lr=config["model"]["lr"]
+        lr=config["model"]["lr"],
+        out_dir=output_dir
     )
 
     # Callbacks
@@ -92,8 +103,12 @@ def train_model(config=None):
     config["wandb"]["run_id"] = run_id
     config["wandb"]["best_model_artifact_name"] = best_model_artifact_name
     wandb_run.config.update({"best_model_artifact_name": best_model_artifact_name}, allow_val_change=True)
-    os.makedirs("temp/", exist_ok=True)
-    save_config("temp/config_test.yaml", config)
+    
+    # Save the best model locally
+    best_model_path = checkpoint_cb.best_model_path
+    shutil.copy(best_model_path, os.path.join(output_dir, "best_model.pt"))
+    save_config(os.path.join("temp", "config.yaml"), config)
+    save_config(os.path.join(output_dir, "config.yaml"), config)
 
     # Finish run
     wandb.finish()

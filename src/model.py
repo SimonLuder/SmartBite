@@ -1,5 +1,4 @@
-import wandb
-import matplotlib.pyplot as plt
+import os
 import torch
 import torch.nn as nn
 import torchvision.models as models
@@ -8,7 +7,7 @@ from torchmetrics.classification import Accuracy, Precision, Recall, MulticlassA
 
 
 class FoodClassifier(pl.LightningModule):
-    def __init__(self, num_classes, lr=1e-4):
+    def __init__(self, num_classes, lr=1e-4, out_dir=None):
         super().__init__()
         self.save_hyperparameters()
 
@@ -26,6 +25,8 @@ class FoodClassifier(pl.LightningModule):
         self.val_acc = Accuracy(task="multiclass", num_classes=num_classes)
         self.val_precision = Precision(task="multiclass", num_classes=num_classes, average='macro')
         self.val_recall = Recall(task="multiclass", num_classes=num_classes, average='macro')
+
+        self.out_dir = out_dir
 
 
     def forward(self, x):
@@ -97,6 +98,6 @@ class FoodClassifier(pl.LightningModule):
         # Stack and save predictions and targets for confusion matrix
         preds = torch.cat(self.test_preds)
         targets = torch.cat(self.test_targets)
-
-        torch.save({"preds": preds, "targets": targets}, "temp/test_outputs.pt")
+        if self.out_dir:
+            torch.save({"preds": preds, "targets": targets}, os.path.join(self.out_dir, "test_outputs.pt"))
     

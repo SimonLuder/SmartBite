@@ -24,13 +24,17 @@ smartbite/
 ├── notebooks/                 # Jupyter Notebooks for EDA, prototyping
 │
 ├── src/                       # Core logic
-│   ├── train.py
-│   └── evaluate.py
+│   ├── preprocess.py
+│   ├── dataset.py             # Defines the pytorch dataset
+│   ├── model.py               # Defines the pytorch lightning model module
+│   ├── train.py               # Training script 
+│   ├── evaluate.py            # Test script
+│   └── inference.py           # Sample functions for inference
 │
 ├── dvc.yaml                   # DVC pipeline config
 ├── Dockerfile                 # Container for API/Streamlit
-├── README.md
-├── requirements.txt           # All Python dependencies
+├── README.md                  # You are here.
+├── requirements.txt           # Python dependencies
 ├── .dvc/
 └── .gitignore
 ```
@@ -57,6 +61,25 @@ python -m venv .venv
 source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
+
+### Run the training pipeline 
+
+Optional: Build the docker image and run the code within the container
+
+   Build the image
+   ```sh
+   docker build -f dockerfile/dockerfile.modeling.cuda -t pytorch-wandb-cuda .
+   ```
+
+   Start the container as an interactive session
+   ```sh
+   docker run -it --rm --gpus all -v $(pwd):/app -w /app pytorch-wandb-cuda bash
+   ```
+
+Run the DVC pipeline. This automates the data download, pre-processing, model training and testing.
+   ```sh
+   dvc repro
+   ```
 
 ### Backend Setup
 
