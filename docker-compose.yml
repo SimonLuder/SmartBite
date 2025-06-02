@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: . # set to root of the project
+      dockerfile: backend/backend.dockerfile
+    image: smartbite-backend
+    container_name: smartbite-backend
+    expose:
+      - 8000 # expose port 8000 to frontend container
+    ports:
+      - '8000:8000' # map container port to host port (for access from host)
+    env_file:
+      - backend/.env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/frontend.dockerfile
+    image: smartbite-frontend
+    container_name: smartbite-frontend
+    ports:
+      - '8501:8501' # map container port to host port (for access from host)
+    environment:
+      BACKEND_URL: http://backend:8000 # pass the backend URL to the frontend
+    depends_on: # wait for backend to be ready
+      - backend

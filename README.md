@@ -7,16 +7,18 @@ Project repository for the graded assignment from the MSE course "Machine Learni
 ```
 smartbite/
 │
+├── .dvc/
+│
 ├── backend/
 |   ├── src/
 │   │   ├── controllers/      # API controllers (e.g. for orchestration)
 |   │   ├── models/           # Pydantic models for request/response validation
 |   │   ├── routes/           # API Endpoints
-|   │   ├── services/         # Core logic (ML model, data processing)
+|   │   └── services/         # Core logic (ML model, data processing)
 │   └── app.py                # Entry point for the FastAPI backend
 |   └── config.py             # Configuration settings (e.g., API keys)
 │
-├── dashboard/
+├── frontend/
 │   └── app.py                 # Streamlit frontend
 │
 ├── data/                      # Raw & processed datasets
@@ -31,15 +33,19 @@ smartbite/
 │   ├── evaluate.py            # Test script
 │   └── inference.py           # Sample functions for inference
 │
+├── tests/                     # Integration tests for backend
+│   ├── fixtures/              # Sample data for testing
+│   └── integration/           # Integration tests API endpoints
+│
 ├── dvc.yaml                   # DVC pipeline config
-├── Dockerfile                 # Container for API/Streamlit
-├── README.md                  # You are here.
-├── requirements.txt           # Python dependencies
+├── docker-compose.yml         # Docker Compose configuration for running the application
+├── README.md
+└── requirements.txt           # All Python dependencies
 ├── .dvc/
 └── .gitignore
 ```
 
-## Repository Setup
+## Application Setup
 
 To set up the repository and prepare the data pipeline, follow these steps:
 
@@ -62,35 +68,44 @@ source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Run the training pipeline 
+### Run the Application
 
-Optional: Build the docker image and run the code within the container
+The application can be started in two ways:
 
-   Build the image
-   ```sh
-   docker build -f dockerfile/dockerfile.modeling.cuda -t pytorch-wandb-cuda .
-   ```
+- use docker to run the backend and frontend
+- run the backend and frontend separately
 
-   Start the container as an interactive session
-   ```sh
-   docker run -it --rm --gpus all -v $(pwd):/app -w /app pytorch-wandb-cuda bash
-   ```
+#### Option 1: Run with Docker
 
-Run the DVC pipeline. This automates the data download, pre-processing, model training and testing.
-   ```sh
-   dvc repro
-   ```
+Make sure you have Docker installed and running.
 
-### Backend Setup
+```sh
+docker compose up --build
+```
 
-**Run the FastAPI backend**
+#### Option 2: Run Backend and Frontend Separately
 
-The backend runs on port 8000 by default.
+_Run the FastAPI backend_
+
+- The backend runs on port 8000 by default.
 
 ```sh
 cd backend
 uvicorn app:app --reload
 ```
+
+_Run the Streamlit frontend_
+
+- The frontend runs on port 8501 by default.
+
+```sh
+cd frontend
+streamlit run Home.py
+```
+
+## ML-Pipline Overview
+
+The machine learning pipeline consists of the following steps:
 
 ### Data Version Control (DVC) Setup
 
@@ -109,5 +124,38 @@ uvicorn app:app --reload
    ```sh
    python src/preprocess.py
    ```
+
+### Run the training pipeline 
+
+Optional: Build the docker image and run the code within the container
+
+   Build the image
+   ```sh
+   docker build -f dockerfile/dockerfile.modeling.cuda -t pytorch-wandb-cuda .
+   ```
+
+   Start the container as an interactive session
+   ```sh
+   docker run -it --rm --gpus all -v $(pwd):/app -w /app pytorch-wandb-cuda bash
+   ```
+
+   Run the DVC pipeline. This automates the data download, pre-processing, model training and testing.
+   ```sh
+   dvc repro
+   ```
+
+### GitHub Actions
+
+The repository is set up with GitHub Actions which automatically run on every push to the `main` branch. The actions include:
+
+- **Tests**: Run integration tests to ensure the API endpoints are functioning correctly.
+- **Download Model Weights**: Download the latest model weights from Weights & Biases to ensure that the backend uses the most up-to-date model.
+- **Docker Images**: Build and push Docker images for the backend and frontend to the GitHub Container Registry.
+
+### Deployment
+
+The application is deployed on Render.com, which pulls the latest Docker images from the GitHub Container Registry and runs them.
+
+The application is accessible [here](https://smartbite-frontend.onrender.com).
 
 ---
