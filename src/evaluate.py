@@ -1,4 +1,5 @@
 import os
+import shutil
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -13,22 +14,25 @@ import numpy as np
 
 from dataset import ImageLabelDataset
 from model import FoodClassifier  # Your LightningModule
-from utils import load_config, download_best_model_artifact, get_run_id_from_name
+from utils import load_config, download_best_model_artifact_from_run, get_run_id_from_name, log_best_model_as_artifact
 
 
 def test_model(config=None):
 
     if config is None:
-        config = load_config()
+        config = load_config("temp/config.yaml")
 
     entity = config["entity"]
     project = config["project_name"]
     name = config["run_name"]
 
+    model_dir = f"models/{config['run_name']}"
+    os.makedirs(model_dir, exist_ok=True)
+
     run_id = get_run_id_from_name(entity, project, config["run_name"])
     wandb_run = wandb.init(project=project, entity=entity, id=run_id, resume="allow", name=name, config=config)
     wandb_logger = WandbLogger(experiment=wandb_run)
-    ckpt_path = download_best_model_artifact(entity, project, run_id, "temp/")
+    ckpt_path = download_best_model_artifact_from_run(entity, project, run_id, "temp/")
 
     # Load model
     model = FoodClassifier.load_from_checkpoint(ckpt_path, num_classes=config["model"]["num_classes"])
@@ -59,7 +63,7 @@ def test_model(config=None):
     trainer.test(model, dataloaders=test_loader)
 
     # Load predictions
-    outputs = torch.load("temp/test_outputs.pt")
+    outputs = torch.load(os.path.join(model_dir, "test_outputs.pt"))
     preds = outputs["preds"].numpy()
     targets = outputs["targets"].numpy()
 
@@ -99,8 +103,24 @@ def test_model(config=None):
     # Upload test predictions as W&B artifact
     wandb.log({"per_class_accuracy": wandb.Image("temp/per_class_accuracy.png")})
 
+    # Overall test accuracy
+    overall_accuracy = np.mean(preds == targets)
+    wandb.log({"test/accuracy": overall_accuracy})
+
+    # Log model as artifact if it's the best
+    log_best_model_as_artifact(
+        entity=entity,
+        project=project,
+        model_path=ckpt_path,
+        test_accuracy=overall_accuracy,
+        artifact_name=f"best_classifier_model"
+    )
+
     # Finish run
     wandb.finish()
+
+    if os.path.exists("temp/"):
+        shutil.rmtree("temp/")
 
 
 if __name__ == "__main__":

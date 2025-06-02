@@ -1,0 +1,9 @@
+# Start from the official PyTorch image with CUDA and cuDNN
+FROM pytorch/pytorch:2.2.2-cuda11.8-cudnn8-runtime
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt

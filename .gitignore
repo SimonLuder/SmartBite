@@ -178,12 +178,14 @@ cython_debug/
 
 # models
 *.pth
+*.pt
 *.ckpt
 
-.dvc
-/data
+/data/raw
+/data/processed
 
 /wandb
+/models
 /temp
 /lightning_logs
 
