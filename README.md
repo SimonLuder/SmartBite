@@ -16,7 +16,8 @@ smartbite/
 │   │   ├── models/               # Pydantic models for request/response validation
 │   │   ├── routes/               # API Endpoints
 │   │   └── services/             # Core logic (ML model, data processing)
-│   └── app.py                    # Entry point for the FastAPI backend
+│   ├── app.py                    # Entry point for the FastAPI backend
+│   ├── backend.dockerfile        # Dockerfile for the backend
 │   └── config.py                 # Configuration settings (e.g., API keys)
 │
 ├── data/                         # Raw & processed datasets
@@ -191,5 +192,7 @@ The application is deployed on Render.com, which pulls the latest Docker images 
 - The frontend image can be found [here](https://github.com/users/SimonLuder/packages/container/package/smartbite-frontend).
 
 The application is accessible [here](https://smartbite-frontend.onrender.com).
+
+- Please note that it can be take some time till the dashboard is accessible, since the frontend will shut down after inactivity.
 
 ---
