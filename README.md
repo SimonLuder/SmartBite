@@ -9,7 +9,7 @@ smartbite/
 │
 ├── .dvc/                         # DVC metadata and cache
 ├── .github/                      # GitHub Actions workflows
-
+│
 ├── backend/
 │   ├── src/
 │   │   ├── controllers/          # API controllers (e.g. for orchestration)
