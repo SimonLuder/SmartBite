@@ -193,4 +193,6 @@ The application is deployed on Render.com, which pulls the latest Docker images 
 
 The application is accessible [here](https://smartbite-frontend.onrender.com).
 
+- Please note that it can be take some time till the dashboard is accessible, since the frontend will shut down after inactivity.
+
 ---
