@@ -16,7 +16,8 @@ smartbite/
 │   │   ├── models/               # Pydantic models for request/response validation
 │   │   ├── routes/               # API Endpoints
 │   │   └── services/             # Core logic (ML model, data processing)
-│   └── app.py                    # Entry point for the FastAPI backend
+│   ├── app.py                    # Entry point for the FastAPI backend
+│   ├── backend.dockerfile        # Dockerfile for the backend
 │   └── config.py                 # Configuration settings (e.g., API keys)
 │
 ├── data/                         # Raw & processed datasets
