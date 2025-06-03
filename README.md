@@ -30,7 +30,7 @@ smartbite/
 │   ├── api.py                    # API client for communication with the backend
 │   ├── frontend.dockerfile       # Dockerfile for the frontend
 │   └── Home.py                   # Main Streamlit application file
-││
+│
 ├── src/
 │   ├── dataset.py                # Defines the pytorch dataset
 │   ├── evaluate.py               # Test script
