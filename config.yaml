@@ -1,6 +1,6 @@
 entity: smartbite
 project_name: smartbite
-run_name: resnet_classifier_2505161
+run_name: resnet_classifier_2505282
 
 dataset:
   train_json: data/processed/food-101/train.json
@@ -14,11 +14,10 @@ model:
   num_classes: 101
 
 trainer:
-  max_epochs: 8
+  max_epochs: 7
   accelerator: auto
   devices: auto
   precision: 32
 
 wandb:
   log_model: all
-  model_artifact: simonluder/smartbite_resnet_classifier:latest
